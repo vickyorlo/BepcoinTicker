@@ -7,6 +7,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:charting="using:WinRTXamlToolkit.Controls.DataVisualization.Charting"    
     mc:Ignorable="d">
+    <Page.TopAppBar>
+        <CommandBar>
+            <AppBarButton Icon="Cancel" />
+        </CommandBar>
+    </Page.TopAppBar>
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <charting:Chart 
             x:Name="LineChart" 
@@ -14,13 +19,15 @@
             VerticalAlignment="Top" 
             Margin="600,49,0,0" Width="500" Height="500" >
             <charting:LineSeries Margin="0" 
-                                IndependentValuePath="code" 
+                                IndependentValuePath="effectiveDate" 
                                 DependentValuePath="mid" 
+                                
                                 IsSelectionEnabled="True"/>
         </charting:Chart>
-        <ListView x:Name="CurrenciesGrid" ItemsSource="{x:Bind CurrentExchanges[0].rates}" HorizontalAlignment="Left" Height="478" Margin="98,104,0,0" VerticalAlignment="Top" Width="452">
+        <ListView x:Name="CurrenciesGrid" ItemsSource="{x:Bind CurrencyCollection}" SelectedItem="{x:Bind currency, Mode=OneWay}" ItemClick="ListView_ItemClick"
+                  HorizontalAlignment="Left" Height="478" Margin="98,104,0,0" VerticalAlignment="Top" Width="452">
             <ListView.ItemTemplate>
-                <DataTemplate x:DataType="local:Exchange">
+                <DataTemplate x:DataType="local:Currency">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="150"></ColumnDefinition>
