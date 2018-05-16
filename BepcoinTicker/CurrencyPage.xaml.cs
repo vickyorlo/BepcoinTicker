@@ -22,9 +22,46 @@ namespace BepcoinTicker
     /// </summary>
     public sealed partial class CurrencyPage : Page
     {
+        public Currency Currency;
+
         public CurrencyPage()
         {
             this.InitializeComponent();
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            Currency = (Currency) e.Parameter;
+            UpdateGraph();
+        }
+
+        private void UpdateGraph()
+        {
+            if (Currency == null || Currency.code == "") return;
+            LineChart.DataContext = NbpApi
+                .GetExchangesForSingleCurrencyInRange(DateFrom.Date.Date, DateTo.Date.Date, Currency.code).Select(exchange =>
+                    new KeyValuePair<DateTime, double>(exchange.EffectiveDate, exchange.mid)).ToArray();
+
+        }
+
+        private void Back_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(MainPage),"back");
+        }
+
+        private void Exit_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Exit();
+        }
+
+        private void DateFrom_DateChanged(object sender, DatePickerValueChangedEventArgs e)
+        {
+            UpdateGraph();
+        }
+
+        private void DateTo_DateChanged(object sender, DatePickerValueChangedEventArgs e)
+        {
+            UpdateGraph();
         }
     }
 }

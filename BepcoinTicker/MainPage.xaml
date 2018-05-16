@@ -5,27 +5,21 @@
     xmlns:local="using:BepcoinTicker"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:charting="using:WinRTXamlToolkit.Controls.DataVisualization.Charting"    
+    xmlns:charting="using:WinRTXamlToolkit.Controls.DataVisualization.Charting"
+    xmlns:system="using:System"
     mc:Ignorable="d">
+    <Page.Resources>
+        <local:DateTimeConverter x:Key="DateTimeConverter"/>
+        <local:CurrencyConverter x:Key="CurrencyConverter"/>
+    </Page.Resources>
     <Page.TopAppBar>
         <CommandBar>
-            <AppBarButton Icon="Cancel" />
+            <AppBarButton HorizontalAlignment="Left" Icon="Cancel" Click="Exit_Click" />
         </CommandBar>
     </Page.TopAppBar>
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <charting:Chart 
-            x:Name="LineChart" 
-            HorizontalAlignment="Left" 
-            VerticalAlignment="Top" 
-            Margin="600,49,0,0" Width="500" Height="500" >
-            <charting:LineSeries Margin="0" 
-                                IndependentValuePath="effectiveDate" 
-                                DependentValuePath="mid" 
-                                
-                                IsSelectionEnabled="True"/>
-        </charting:Chart>
-        <ListView x:Name="CurrenciesGrid" ItemsSource="{x:Bind CurrencyCollection}" SelectedItem="{x:Bind currency, Mode=OneWay}" ItemClick="ListView_ItemClick"
-                  HorizontalAlignment="Left" Height="478" Margin="98,104,0,0" VerticalAlignment="Top" Width="452">
+        <ListView x:Name="CurrenciesGrid" ItemsSource="{Binding}" SelectedItem="{x:Bind Currency, Mode=TwoWay, Converter={StaticResource CurrencyConverter}}"
+                  HorizontalAlignment="Left" Height="686" Margin="218,60,0,0" VerticalAlignment="Top" Width="660" SelectionMode="Single" SelectionChanged="CurrenciesGrid_SelectionChanged" RenderTransformOrigin="0.5,0.5">
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:Currency">
                     <Grid>
@@ -43,6 +37,16 @@
                 </DataTemplate>
             </ListView.ItemTemplate>    
         </ListView>
-        
+        <ListView x:Name="DatesListView" ItemsSource="{Binding}" SelectedItem="{x:Bind SelectedDate, Mode=TwoWay, Converter={StaticResource DateTimeConverter}}"  HorizontalAlignment="Left" Height="980" Margin="10,10,0,0" VerticalAlignment="Top" Width="134" SelectionChanged="DatesListView_SelectionChanged">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="system:Nullable">
+                    <TextBlock Text="{Binding Converter={StaticResource DateTimeConverter}}" Grid.Column="0"/>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <ListView.Header>
+                <TextBlock Text="Date" TextAlignment="Center"/>
+            </ListView.Header>
+        </ListView>
+
     </Grid>
 </Page>
