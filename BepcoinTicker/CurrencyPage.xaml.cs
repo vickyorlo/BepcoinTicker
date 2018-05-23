@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -24,24 +25,78 @@ namespace BepcoinTicker
     {
         public Currency Currency;
 
+        public string ChartTitle => $"Price history for {Currency.currency}";
+
+        private readonly Windows.Storage.ApplicationDataContainer localSettings;
+
         public CurrencyPage()
         {
             this.InitializeComponent();
+            localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-            Currency = (Currency) e.Parameter;
-            UpdateGraph();
+            if (e.Parameter is null)
+            {
+                //we resuming boys
+                var composite = (Windows.Storage.ApplicationDataCompositeValue) localSettings.Values["currencyObj"];
+                Currency = new Currency
+                {
+                    code = (string) composite["code"],
+                    currency = (string) composite["currency"]
+                };
+                DateFrom.Date = (DateTimeOffset) composite["from"];
+                DateTo.Date = (DateTimeOffset)composite["to"];
+
+                UpdateGraph();
+            }
+            else
+            {
+                Currency = (Currency)e.Parameter;
+                UpdateGraph();
+                localSettings.Values["page"] = "curr";
+            }
         }
 
-        private void UpdateGraph()
+        private async void UpdateGraph()
         {
             if (Currency == null || Currency.code == "") return;
-            LineChart.DataContext = NbpApi
-                .GetExchangesForSingleCurrencyInRange(DateFrom.Date.Date, DateTo.Date.Date, Currency.code).Select(exchange =>
-                    new KeyValuePair<DateTime, double>(exchange.EffectiveDate, exchange.mid)).ToArray();
+            if (DateFrom.Date.Date < DateTime.Parse("23-09-02"))
+            {
+                errorTextBox.Text = "Error: invalid date!";
+                return;
+            }
 
+            Windows.Storage.ApplicationDataCompositeValue composite =
+                new Windows.Storage.ApplicationDataCompositeValue
+                {
+                    ["currency"] = Currency.currency,
+                    ["code"] = Currency.code,
+                    ["from"] = DateFrom.Date,
+                    ["to"] = DateTo.Date
+                };
+            localSettings.Values["currencyObj"] = composite;
+
+
+            errorTextBox.Text = "";
+            var from = DateFrom.Date.Date;
+            var to = DateTo.Date.Date;
+            var tempPairs = new List<KeyValuePair<DateTime, double>>();
+            var ab = new List<Task<List<Exchange>>>();
+            while (to - from > TimeSpan.FromDays(356))
+            {
+                var mid = to.AddDays(-356);
+                ab.Add(NbpApi.GetExchangesForSingleCurrencyInRange(mid, to, Currency.code));
+                to = mid;
+            }
+            ab.Add(NbpApi.GetExchangesForSingleCurrencyInRange(from, to, Currency.code));
+
+            await Task.Run(async () =>
+            {
+                tempPairs.AddRange(from l in await Task.WhenAll(ab) from ex in l select new KeyValuePair<DateTime, double>(ex.EffectiveDate, ex.mid));
+            });
+            LineChart.DataContext = tempPairs;
         }
 
         private void Back_Click(object sender, RoutedEventArgs e)

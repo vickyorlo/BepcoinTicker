@@ -30,6 +30,22 @@ namespace BepcoinTicker
         {
             this.InitializeComponent();
             this.Suspending += OnSuspending;
+            this.Resuming += App_Resuming;
+        }
+
+        private void App_Resuming(object sender, object e)
+        {
+            var rootFrame = Window.Current.Content as Frame;
+            var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+            if (localSettings != null && (string)localSettings.Values["page"] == "main")
+            {
+                rootFrame?.Navigate(typeof(MainPage), "resuming");
+            }
+
+            if (localSettings != null && (string)localSettings.Values["page"] == "curr")
+            {
+                rootFrame?.Navigate(typeof(CurrencyPage), null);
+            }
         }
 
         /// <summary>
@@ -39,11 +55,9 @@ namespace BepcoinTicker
         /// <param name="e">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
-            Frame rootFrame = Window.Current.Content as Frame;
-
             // Do not repeat app initialization when the Window already has content,
             // just ensure that the window is active
-            if (rootFrame == null)
+            if (!(Window.Current.Content is Frame rootFrame))
             {
                 // Create a Frame to act as the navigation context and navigate to the first page
                 rootFrame = new Frame();
@@ -53,6 +67,7 @@ namespace BepcoinTicker
                 if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
                 {
                     //TODO: Load state from previously suspended application
+
                 }
 
                 // Place the frame in the current Window

@@ -15,7 +15,7 @@
         </CommandBar>
     </Page.TopAppBar>
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Charting:Chart x:Name="LineChart"  HorizontalAlignment="Left" VerticalAlignment="Top" Margin="77,154,0,0" Width="1327" Height="686" BorderBrush="Black">
+        <Charting:Chart x:Name="LineChart"  Title="{x:Bind ChartTitle}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="77,154,0,0" Width="1327" Height="686" BorderBrush="Black">
             <Charting:Chart.Axes>
                 <Charting:DateTimeAxis Orientation="X"
                     Location="Bottom">
@@ -30,7 +30,10 @@
             <Charting:LineSeries Title="Price" Margin="0" ItemsSource="{Binding}" IndependentValuePath="Key" DependentValuePath="Value" IsSelectionEnabled="True"/>
         </Charting:Chart>
         <DatePicker x:Name="DateFrom" HorizontalAlignment="Left" Margin="209,117,0,0" VerticalAlignment="Top" Date="{Binding}" DateChanged="DateFrom_DateChanged"/>
-        <DatePicker x:Name="DateTo" HorizontalAlignment="Left" Margin="592,117,0,0" VerticalAlignment="Top" Date="{Binding}"  DateChanged="DateTo_DateChanged"/>
+        <DatePicker x:Name="DateTo" HorizontalAlignment="Left" Margin="949,117,0,0" VerticalAlignment="Top" Date="{Binding}"  DateChanged="DateTo_DateChanged"/>
+        <TextBlock x:Name="fromText" HorizontalAlignment="Left" Margin="149,120,0,0" TextWrapping="Wrap" Text="From:" VerticalAlignment="Top" FontSize="22"/>
+        <TextBlock x:Name="toText" HorizontalAlignment="Left" Margin="917,120,0,0" TextWrapping="Wrap" Text="To:" VerticalAlignment="Top" RenderTransformOrigin="0.389,0.5" FontSize="22"/>
+        <TextBlock x:Name="errorTextBox" HorizontalAlignment="Left" Margin="510,120,0,0" TextWrapping="Wrap" Text="--" VerticalAlignment="Top" FontSize="22" Foreground="Red"/>
 
     </Grid>
 </Page>

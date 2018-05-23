@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
+using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -21,23 +20,30 @@ namespace BepcoinTicker
 
         public Currency Currency = new Currency();
 
-        public DateTime? SelectedDate;
+        public DateTime? SelectedDate = DateTime.Today;
 
         public ObservableCollection<DateTime> SelectableDates;
+
+        private readonly ApplicationDataContainer localSettings;
+
+        public string DateDescription => $"Exchange for day {SelectedDate}";
 
         public MainPage()
         {
             InitializeComponent();
 
-            DatesListView.DataContext = GetDaysBetweenTwoDates(DateTime.Today.AddDays(-90),DateTime.Today);
+            DatesListView.DataContext = GetDaysBetweenTwoDates(DateTime.Today.AddDays(-90), DateTime.Today);
 
             CurrenciesGrid.DataContext = NbpApi.GetAllCurrencyExchangeRatesForDay(DateTime.Today);
+
+            localSettings = ApplicationData.Current.LocalSettings;
+            localSettings.Values["page"] = "main";
         }
 
         private ObservableCollection<DateTime> GetDaysBetweenTwoDates(DateTime from, DateTime to)
         {
-            ObservableCollection<DateTime> result = new ObservableCollection<DateTime>();
-            DateTime current = from;
+            var result = new ObservableCollection<DateTime>();
+            var current = from;
             while (current < to)
             {
                 result.Add(current);
@@ -49,23 +55,28 @@ namespace BepcoinTicker
 
         private void Resume()
         {
+            if (SelectedDate == null) return;
+            CurrenciesGrid.DataContext = NbpApi.GetAllCurrencyExchangeRatesForDay((DateTime) SelectedDate);
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
-
+            if (e.Parameter != null && (string) e.Parameter == "resuming")
+                CurrenciesGrid.DataContext =
+                    NbpApi.GetAllCurrencyExchangeRatesForDay(((DateTimeOffset) localSettings.Values["date"]).DateTime);
+            localSettings.Values["page"] = "main";
         }
 
         private void DatesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (SelectedDate == null) return;
             CurrenciesGrid.DataContext = NbpApi.GetAllCurrencyExchangeRatesForDay((DateTime) SelectedDate);
-            //CurrenciesGrid.SelectedItem = null;
+            localSettings.Values["Date"] = (DateTimeOffset)SelectedDate;
         }
 
         private void CurrenciesGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            this.Frame.Navigate(typeof(CurrencyPage), Currency );
+            Frame.Navigate(typeof(CurrencyPage), Currency);
         }
 
         private void Exit_Click(object sender, RoutedEventArgs e)

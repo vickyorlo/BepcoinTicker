@@ -35,7 +35,7 @@ namespace BepcoinTicker
             }
         }
 
-        public static List<Exchange> GetExchangesForSingleCurrencyInRange(DateTime from, DateTime to, string currency)
+        public static async Task<List<Exchange>> GetExchangesForSingleCurrencyInRange(DateTime from, DateTime to, string currency)
         {
             string url =
                 $@"http://api.nbp.pl/api/exchangerates/rates/a/{currency}/{from.GetDateTimeFormats()[4]}/{
@@ -46,7 +46,7 @@ namespace BepcoinTicker
             var request = (HttpWebRequest) WebRequest.Create(url);
             try
             {
-                var response = Task.Run(() => request.GetResponseAsync()).GetAwaiter().GetResult();
+                var response = await  request.GetResponseAsync();
 
                 return ((RatesTable) ser.ReadObject(response.GetResponseStream())).rates;
             }
